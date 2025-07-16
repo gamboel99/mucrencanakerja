@@ -86,7 +86,11 @@ if not df.empty:
         cols[2].write(row["jenis"])
         cols[3].write(row["tgl_masuk"])
         cols[4].write(row["estimasi_selesai"])
-        cols[5].write(f"Rp {int(row['nominal']):,}")
+        try:
+            nominal_display = int(row["nominal"])
+        except:
+            nominal_display = 0
+            cols[5].write(f"Rp {nominal_display:,}")
 
         if cols[6].button("✏️", key=f"edit_{i}"):
             st.session_state.edit_index = i
