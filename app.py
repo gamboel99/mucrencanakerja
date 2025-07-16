@@ -16,9 +16,18 @@ df = pd.DataFrame(wks.get_all_records())
 df.columns = [str(col).strip().lower().replace(" ", "_") for col in df.columns]
 
 required_cols = ["nama_klien", "topik", "jenis", "tgl_masuk", "estimasi_selesai", "nominal"]
-if not all(col in df.columns for col in required_cols):
-    st.warning(f"⚠️ Kolom tidak lengkap. Harus ada: {required_cols}")
+
+# 🔍 DEBUG KOLOM
+st.subheader("🧪 Debug Kolom dari Sheet")
+st.write("📋 Kolom yang terbaca:", df.columns.tolist())
+missing = [col for col in required_cols if col not in df.columns]
+if missing:
+    st.error(f"🚨 Kolom berikut belum ditemukan di Sheet: {missing}")
 else:
+    st.success("✅ Semua kolom wajib sudah tersedia!")
+
+if not missing:
+    # ➕ Tambah Data
     with st.expander("➕ Tambah Pekerjaan Baru", expanded=True):
         with st.form("form_input"):
             nama = st.text_input("Nama Klien")
@@ -34,13 +43,13 @@ else:
                 st.success("✅ Data berhasil ditambahkan!")
                 st.rerun()
 
+    # 📋 Tampilkan Data
     st.subheader("📋 Data Jadwal Konsultasi")
     if not df.empty:
         df.index += 1
         st.dataframe(df, use_container_width=True)
-    else:
-        st.info("Belum ada data.")
 
+    # ✏️ Edit / Hapus
     st.subheader("✏️ Edit / 🗑️ Hapus")
     if not df.empty:
         row_to_edit = st.number_input("Pilih nomor baris", min_value=1, max_value=len(df))
@@ -78,12 +87,14 @@ else:
             st.warning("❌ Data dihapus.")
             st.rerun()
 
+    # 📊 Statistik
     st.subheader("📊 Statistik Pendapatan")
     df["estimasi_selesai"] = pd.to_datetime(df["estimasi_selesai"], errors="coerce")
     harian = df[df["estimasi_selesai"].dt.date == date.today()]["nominal"].sum()
     bulanan = df[df["estimasi_selesai"].dt.month == date.today().month]["nominal"].sum()
     st.success(f"💰 Hari ini: Rp {harian:,.0f} | Bulan ini: Rp {bulanan:,.0f}")
 
+    # 📦 Backup
     st.subheader("📦 Ekspor & Backup")
     st.download_button("⬇️ Download Excel", df.to_csv(index=False).encode(), file_name="jadwal_konsultasi.csv")
 
