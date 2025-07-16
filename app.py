@@ -88,10 +88,58 @@ if not missing:
                 st.rerun()
 
     # 📋 Tampilkan Data
-    st.subheader("📋 Data Jadwal Konsultasi")
-    if not df.empty:
-        df.index += 1
-        st.dataframe(df, use_container_width=True)
+    st.subheader("📋 Data Jadwal Konsultasi (Langsung Edit/Hapus)")
+if not df.empty:
+    for i, row in df.iterrows():
+        st.markdown("---")
+        cols = st.columns([2, 2, 2, 2, 2, 2, 2, 1, 1])
+        cols[0].markdown(f"**{row['nama_klien']}**")
+        cols[1].write(row["topik"])
+        cols[2].write(row["jenis"])
+        cols[3].write(row["tgl_masuk"])
+        cols[4].write(row["estimasi_selesai"])
+        cols[5].write(f"Rp {int(row['nominal']):,}")
+        
+        if cols[6].button("✏️", key=f"edit_{i}"):
+            st.session_state.edit_index = i
+
+        if cols[7].button("🗑️", key=f"hapus_{i}"):
+            df.drop(index=i, inplace=True)
+            df.reset_index(drop=True, inplace=True)
+            wks.clear(start="A2", end=None)
+            wks.set_dataframe(df, start="A2", copy_head=False)
+            st.success(f"✅ Data baris ke-{i+1} dihapus!")
+            st.rerun()
+
+    # ⬇️ Form edit akan muncul jika tombol edit ditekan
+    if "edit_index" in st.session_state:
+        idx = st.session_state.edit_index
+        st.markdown("### ✏️ Edit Data")
+        selected = df.loc[idx]
+
+        nama_new = st.text_input("Edit Nama", selected["nama_klien"], key="edit_nama")
+        topik_new = st.text_input("Edit Topik", selected["topik"], key="edit_topik")
+        jenis_new = st.text_input("Edit Jenis", selected["jenis"], key="edit_jenis")
+
+        tgl_masuk_parsed = pd.to_datetime(selected["tgl_masuk"], errors="coerce")
+        estimasi_parsed = pd.to_datetime(selected["estimasi_selesai"], errors="coerce")
+
+        tgl_masuk_new = st.date_input("Edit Tgl Masuk", tgl_masuk_parsed.date() if not pd.isna(tgl_masuk_parsed) else date.today(), key="edit_masuk")
+        estimasi_new = st.date_input("Edit Estimasi", estimasi_parsed.date() if not pd.isna(estimasi_parsed) else date.today(), key="edit_estimasi")
+
+        try:
+            nilai_nominal = int(selected["nominal"])
+        except:
+            nilai_nominal = 0
+        nominal_new = st.number_input("Edit Nominal", nilai_nominal, key="edit_nominal")
+
+        if st.button("💾 Simpan Perubahan", key="simpan_edit"):
+            df.loc[idx] = [nama_new, topik_new, jenis_new, str(tgl_masuk_new), str(estimasi_new), int(nominal_new)]
+            wks.clear(start="A2", end=None)
+            wks.set_dataframe(df, start="A2", copy_head=False)
+            st.success("✅ Data berhasil diperbarui!")
+            del st.session_state.edit_index
+            st.rerun()
 
     # ✏️ Edit / Hapus
     st.subheader("✏️ Edit / 🗑️ Hapus")
