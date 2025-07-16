@@ -13,7 +13,7 @@ sheet = gc.open_by_url("https://docs.google.com/spreadsheets/d/1jjwbjGwOBKkC7fOq
 wks = sheet.sheet1
 
 df = pd.DataFrame(wks.get_all_records())
-df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
+df.columns = [str(col).strip().lower().replace(" ", "_") for col in df.columns]
 
 required_cols = ["nama_klien", "topik", "jenis", "tgl_masuk", "estimasi_selesai", "nominal"]
 if not all(col in df.columns for col in required_cols):
