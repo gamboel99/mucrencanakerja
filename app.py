@@ -109,6 +109,11 @@ if all(col in df.columns for col in required_cols):
 
     # Export
     st.download_button("⬇️ Download ke Excel", df.to_csv(index=False).encode(), file_name="jadwal_konsultasi.csv")
-    with open("backup_data.json", "w") as f:
-        json.dump(df.to_dict(orient="records"), f)
-    st.download_button("📦 Backup ke JSON", data=open("backup_data.json", "rb"), file_name="jadwal_backup.json")
+    df_serial = df.copy()
+for kolom in ["tgl_masuk", "estimasi_selesai"]:
+    if kolom in df_serial.columns:
+        df_serial[kolom] = df_serial[kolom].astype(str)
+
+with open("backup_data.json", "w") as f:
+    json.dump(df_serial.to_dict(orient="records"), f)
+
