@@ -58,7 +58,12 @@ if all(col in df.columns for col in required_cols):
         jenis_new = st.text_input("Edit Jenis", selected["jenis"], key="edit_jenis")
         tgl_masuk_new = st.date_input("Edit Tgl Masuk", pd.to_datetime(selected["tgl_masuk"]), key="edit_masuk")
         estimasi_new = st.date_input("Edit Estimasi Selesai", pd.to_datetime(selected["estimasi_selesai"]), key="edit_estimasi")
-        nominal_new = st.number_input("Edit Nominal", int(selected["nominal"]), key="edit_nominal")
+        try:
+            nilai_nominal = int(selected["nominal"])
+        except:
+            nilai_nominal = 0
+
+        nominal_new = st.number_input("Edit Nominal", nilai_nominal, key="edit_nominal")
 
         col1, col2 = st.columns(2)
         if col1.button("💾 Simpan Perubahan"):
