@@ -11,7 +11,7 @@ st.title("📋 Jadwal Konsultasi Ilmiah (Offline Mode)")
 with st.form("input_form"):
     nama = st.text_input("Nama Klien")
     topik = st.text_input("Topik")
-    jenis = st.selectbox("Jenis", ["Skripsi", "Tesis", "Disertasi"])
+    jenis = st.text_input("Jenis Layanan (misal: Revisi, Bab 1, Review Proposal, dll)")
     estimasi_hari = st.number_input("Estimasi Hari Pengerjaan", min_value=1, max_value=30)
     nominal = st.number_input("Nominal Pembayaran", min_value=0)
     status = st.selectbox("Status Pembayaran", ["Belum", "Lunas", "Tidak Dibayar"])
