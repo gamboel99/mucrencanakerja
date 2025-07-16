@@ -14,8 +14,6 @@ wks = sheet.sheet1
 
 df = pd.DataFrame(wks.get_all_records())
 df.columns = [str(col).strip().lower().replace(" ", "_") for col in df.columns]
-# 🔎 Cek tanggal rusak
-st.subheader("🧼 Deteksi & Perbaikan Tanggal Rusak")
 
 df["tgl_masuk"] = pd.to_datetime(df["tgl_masuk"], errors="coerce")
 df["estimasi_selesai"] = pd.to_datetime(df["estimasi_selesai"], errors="coerce")
