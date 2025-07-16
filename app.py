@@ -60,6 +60,7 @@ else:
 # ➕ Tambah Data
 with st.expander("➕ Tambah Pekerjaan Baru", expanded=True):
     with st.form("form_input"):
+        id = st.number_input("Nomor Urut")
         nama = st.text_input("Nama Klien")
         topik = st.text_input("Topik / Judul")
         jenis = st.text_input("Jenis Layanan")
