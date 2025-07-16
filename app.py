@@ -141,44 +141,7 @@ if not df.empty:
             del st.session_state.edit_index
             st.rerun()
 
-    # ✏️ Edit / Hapus
-    st.subheader("✏️ Edit / 🗑️ Hapus")
-    if not df.empty:
-        row_to_edit = st.number_input("Pilih nomor baris", min_value=1, max_value=len(df))
-        selected = df.iloc[row_to_edit - 1]
-
-        nama_new = st.text_input("Edit Nama", selected["nama_klien"], key="edit_nama")
-        topik_new = st.text_input("Edit Topik", selected["topik"], key="edit_topik")
-        jenis_new = st.text_input("Edit Jenis", selected["jenis"], key="edit_jenis")
-
-        tgl_masuk_parsed = pd.to_datetime(selected["tgl_masuk"], errors="coerce")
-        estimasi_parsed = pd.to_datetime(selected["estimasi_selesai"], errors="coerce")
-
-        tgl_masuk_new = st.date_input("Edit Tgl Masuk", tgl_masuk_parsed.date() if not pd.isna(tgl_masuk_parsed) else date.today(), key="edit_masuk")
-        estimasi_new = st.date_input("Edit Estimasi", estimasi_parsed.date() if not pd.isna(estimasi_parsed) else date.today(), key="edit_estimasi")
-
-        try:
-            nilai_nominal = int(selected["nominal"])
-        except:
-            nilai_nominal = 0
-        nominal_new = st.number_input("Edit Nominal", nilai_nominal, key="edit_nominal")
-
-        col1, col2 = st.columns(2)
-        if col1.button("💾 Simpan Perubahan"):
-            df.loc[row_to_edit - 1] = [nama_new, topik_new, jenis_new, str(tgl_masuk_new), str(estimasi_new), int(nominal_new)]
-            wks.clear(start="A2", end=None)
-            wks.set_dataframe(df, start="A2", copy_head=False)
-            st.success("✅ Data diperbarui!")
-            st.rerun()
-
-        if col2.button("🗑️ Hapus"):
-            df.drop(index=row_to_edit - 1, inplace=True)
-            df.reset_index(drop=True, inplace=True)
-            wks.clear(start="A2", end=None)
-            wks.set_dataframe(df, start="A2", copy_head=False)
-            st.warning("❌ Data dihapus.")
-            st.rerun()
-
+    
     # 📊 Statistik
     st.subheader("📊 Statistik Pendapatan")
     df["estimasi_selesai"] = pd.to_datetime(df["estimasi_selesai"], errors="coerce")
