@@ -4,9 +4,6 @@ import uuid
 from datetime import date, timedelta
 import sqlite3
 
-# ------------------------------
-# FUNGSI DATABASE
-# ------------------------------
 def connect_db():
     conn = sqlite3.connect("penjadwalan.db")
     return conn
@@ -30,16 +27,10 @@ def create_table():
     conn.commit()
     conn.close()
 
-# ------------------------------
-# START APLIKASI
-# ------------------------------
 create_table()
 st.set_page_config(page_title="Penjadwalan Konsultasi", layout="wide")
 st.title("📚 Aplikasi Penjadwalan Konsultasi Ilmiah")
 
-# ------------------------------
-# FORM INPUT
-# ------------------------------
 with st.form("form_input"):
     st.subheader("✍️ Input Layanan Baru")
     nama = st.text_input("Nama Klien")
@@ -69,9 +60,6 @@ with st.form("form_input"):
         conn.close()
         st.success(f"✅ Disimpan! Estimasi mulai: {tanggal_mulai}, selesai: {tanggal_selesai}")
 
-# ------------------------------
-# LOAD DATA
-# ------------------------------
 conn = connect_db()
 df = pd.read_sql("SELECT * FROM penjadwalan ORDER BY tanggal_masuk", conn)
 conn.close()
@@ -79,9 +67,6 @@ conn.close()
 if df.empty:
     st.warning("Belum ada data pekerjaan.")
 else:
-    # ------------------------------
-    # REMINDER H-1
-    # ------------------------------
     besok = date.today() + timedelta(days=1)
     df['estimasi_selesai'] = pd.to_datetime(df['estimasi_selesai'])
     reminder = df[df['estimasi_selesai'] == pd.to_datetime(besok)]
@@ -93,9 +78,6 @@ else:
             st.warning("⚠️ Ada pekerjaan dengan deadline besok:")
             st.dataframe(reminder)
 
-    # ------------------------------
-    # ESTIMASI PENDAPATAN
-    # ------------------------------
     df['tanggal_masuk'] = pd.to_datetime(df['tanggal_masuk'])
     df['bulan'] = df['tanggal_masuk'].dt.strftime('%Y-%m')
 
@@ -108,15 +90,9 @@ else:
     st.metric("💰 Pendapatan Hari Ini", f"Rp {pemasukan_hari_ini:,.0f}")
     st.metric("📆 Pendapatan Bulan Ini", f"Rp {pemasukan_bulanan:,.0f}")
 
-    # ------------------------------
-    # ESTIMASI JADWAL KOSONG
-    # ------------------------------
     total_antri = df['estimasi_hari'].sum()
     jadwal_kosong = date.today() + timedelta(days=total_antri)
     st.info(f"📆 Estimasi jadwal kosong berikutnya: **{jadwal_kosong}** (Antrian {total_antri} hari kerja)")
 
-    # ------------------------------
-    # TAMPILKAN SEMUA DATA
-    # ------------------------------
     st.subheader("📋 Daftar Antrian Pekerjaan")
     st.dataframe(df.drop(columns=['bulan']))
