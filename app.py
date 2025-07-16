@@ -14,6 +14,50 @@ wks = sheet.sheet1
 
 df = pd.DataFrame(wks.get_all_records())
 df.columns = [str(col).strip().lower().replace(" ", "_") for col in df.columns]
+# 🔎 Cek tanggal rusak
+st.subheader("🧼 Deteksi & Perbaikan Tanggal Rusak")
+
+df["tgl_masuk"] = pd.to_datetime(df["tgl_masuk"], errors="coerce")
+df["estimasi_selesai"] = pd.to_datetime(df["estimasi_selesai"], errors="coerce")
+
+rusak_masuk = df[df["tgl_masuk"].isna()]
+rusak_estimasi = df[df["estimasi_selesai"].isna()]
+
+if not rusak_masuk.empty or not rusak_estimasi.empty:
+    st.warning("🚨 Ditemukan tanggal rusak pada data berikut:")
+
+    if not rusak_masuk.empty:
+        st.write("❌ Kolom `tgl_masuk` kosong/rusak:")
+        st.dataframe(rusak_masuk)
+
+    if not rusak_estimasi.empty:
+        st.write("❌ Kolom `estimasi_selesai` kosong/rusak:")
+        st.dataframe(rusak_estimasi)
+
+    if st.button("🔧 Perbaiki Tanggal Otomatis"):
+        for i, row in df.iterrows():
+            if pd.isna(row["tgl_masuk"]):
+                df.at[i, "tgl_masuk"] = date.today()
+            if pd.isna(row["estimasi_selesai"]):
+                try:
+                    masuk = pd.to_datetime(row["tgl_masuk"], errors="coerce")
+                    df.at[i, "estimasi_selesai"] = masuk + timedelta(days=5)
+                except:
+                    df.at[i, "estimasi_selesai"] = date.today() + timedelta(days=5)
+
+        # Simpan kembali ke Google Sheets
+        df_to_save = df.copy()
+        df_to_save["tgl_masuk"] = df_to_save["tgl_masuk"].dt.strftime("%Y-%m-%d")
+        df_to_save["estimasi_selesai"] = df_to_save["estimasi_selesai"].dt.strftime("%Y-%m-%d")
+
+        wks.clear(start="A2", end=None)
+        wks.set_dataframe(df_to_save, start="A2", copy_head=False)
+
+        st.success("✅ Tanggal rusak telah diperbaiki dan disimpan!")
+        st.rerun()
+else:
+    st.success("✅ Semua tanggal valid. Tidak ada kerusakan.")
+
 
 required_cols = ["nama_klien", "topik", "jenis", "tgl_masuk", "estimasi_selesai", "nominal"]
 
