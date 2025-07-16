@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import pygsheets
@@ -27,7 +26,7 @@ if missing:
 else:
     st.success("✅ Semua kolom wajib tersedia.")
 
-# 🔧 Deteksi dan Perbaiki Tanggal Rusak
+# 🔧 Periksa tanggal rusak
 st.subheader("🧼 Deteksi & Perbaikan Tanggal Rusak")
 df["tgl_masuk"] = pd.to_datetime(df["tgl_masuk"], errors="coerce")
 df["estimasi_selesai"] = pd.to_datetime(df["estimasi_selesai"], errors="coerce")
@@ -90,7 +89,7 @@ if not df.empty:
             nominal_display = int(row["nominal"])
         except:
             nominal_display = 0
-            cols[5].write(f"Rp {nominal_display:,}")
+        cols[5].write(f"Rp {nominal_display:,}")
 
         if cols[6].button("✏️", key=f"edit_{i}"):
             st.session_state.edit_index = i
@@ -113,7 +112,7 @@ if not df.empty:
         estimasi_parsed = pd.to_datetime(selected["estimasi_selesai"], errors="coerce")
         tgl_masuk_new = st.date_input("Edit Tgl Masuk", tgl_masuk_parsed.date() if not pd.isna(tgl_masuk_parsed) else date.today(), key="edit_masuk")
         estimasi_new = st.date_input("Edit Estimasi", estimasi_parsed.date() if not pd.isna(estimasi_parsed) else date.today(), key="edit_estimasi")
-        nominal_new = st.number_input("Edit Nominal", int(selected["nominal"]), key="edit_nominal")
+        nominal_new = st.number_input("Edit Nominal", int(selected["nominal"]) if not pd.isna(selected["nominal"]) else 0, key="edit_nominal")
 
         if st.button("💾 Simpan Perubahan", key="simpan_edit"):
             df.loc[idx] = [selected["id"], nama_new, topik_new, jenis_new, str(tgl_masuk_new), str(estimasi_new), int(nominal_new)]
@@ -123,14 +122,14 @@ if not df.empty:
             del st.session_state.edit_index
             st.rerun()
 
-# 📊 Statistik
+# 📊 Statistik Pendapatan
 st.subheader("📊 Statistik Pendapatan")
 df["estimasi_selesai"] = pd.to_datetime(df["estimasi_selesai"], errors="coerce")
 harian = df[df["estimasi_selesai"].dt.date == date.today()]["nominal"].sum()
 bulanan = df[df["estimasi_selesai"].dt.month == date.today().month]["nominal"].sum()
 st.success(f"💰 Hari ini: Rp {harian:,.0f} | Bulan ini: Rp {bulanan:,.0f}")
 
-# 📦 Ekspor & Backup
+# 📦 Export
 st.subheader("📦 Ekspor & Backup")
 st.download_button("⬇️ Download Excel", df.to_csv(index=False).encode(), file_name="jadwal_konsultasi.csv")
 df_serial = df.copy()
@@ -149,9 +148,9 @@ if not reminder.empty:
     TOKEN = "dcbcd85b10f3392852e3a88610edba60"
     FROM = "+14155238886"
     TO = "+6282228278397"
-    pesan = f"🔔 Reminder pekerjaan H-1 ({besok}):\n"
+    pesan = f"🔔 Reminder pekerjaan H-1 ({besok}):\\n"
     for _, row in reminder.iterrows():
-        pesan += f"• {row['nama_klien']} - {row['topik']}\n"
+        pesan += f"• {row['nama_klien']} - {row['topik']}\\n"
     try:
         sid = kirim_whatsapp(TO, pesan, SID, TOKEN, FROM)
         st.success("📱 Reminder WA terkirim!")
