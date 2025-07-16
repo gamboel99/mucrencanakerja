@@ -96,3 +96,26 @@ else:
 
     st.subheader("📋 Daftar Antrian Pekerjaan")
     st.dataframe(df.drop(columns=['bulan']))
+
+from whatsapp import kirim_whatsapp
+
+ACCOUNT_SID = st.secrets["twilio"]["sid"]
+AUTH_TOKEN = st.secrets["twilio"]["token"]
+FROM_WA = st.secrets["twilio"]["from"]
+TO_YOU = st.secrets["twilio"]["to"]
+
+# Reminder H-1 otomatis via WA
+besok = date.today() + timedelta(days=1)
+df['estimasi_selesai'] = pd.to_datetime(df['estimasi_selesai'])
+reminder = df[df['estimasi_selesai'] == pd.to_datetime(besok)]
+
+if not reminder.empty:
+    pesan = f"🔔 Pengingat H-1 Konsultasi\nDeadline besok ({besok}):\n\n"
+    for _, row in reminder.iterrows():
+        pesan += f"• {row['nama_klien']} – {row['jenis']}: {row['topik']}\n"
+
+    try:
+        sid_msg = kirim_whatsapp(TO_YOU, pesan, ACCOUNT_SID, AUTH_TOKEN, FROM_WA)
+        st.success("📱 Reminder WA berhasil dikirim.")
+    except Exception as e:
+        st.error(f"Gagal kirim WhatsApp: {e}")
